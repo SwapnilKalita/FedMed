@@ -77,6 +77,28 @@ python fedmed\fl\client.py     # connects a minimal client to server (requires f
     </ul>
   </section>
 
+  <section id="demo-server">
+    <h2>Interactive demo (using local Python)</h2>
+    <p>Click <strong>Run Demo (server)</strong> to call the local Python demo API and display real outputs produced by the repository stubs. Start the API with: <code>python fedmed\api\run_demo_api.py</code></p>
+    <button id="runRemoteDemo">Run Demo (server)</button>
+    <pre id="remoteDemoOutput" style="white-space: pre-wrap; background:#f6f8fa; padding:12px; border-radius:6px;"></pre>
+  </section>
+
+  <script>
+    document.getElementById('runRemoteDemo').addEventListener('click', async () => {
+      const out = document.getElementById('remoteDemoOutput');
+      out.textContent = 'Calling local demo server...';
+      try {
+        const resp = await fetch('http://localhost:5000/run_demo');
+        if (!resp.ok) throw new Error('Server returned ' + resp.status);
+        const data = await resp.json();
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message + '\n\nMake sure you started the API with:\npython fedmed\\api\\run_demo_api.py';
+      }
+    });
+  </script>
+
   <footer>
     <small>Branch: <code>feat/flower-monai-scaffold</code>. Commits will be pushed to your remote as requested.</small>
   </footer>
