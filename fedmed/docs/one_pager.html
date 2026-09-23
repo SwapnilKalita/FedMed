@@ -24,14 +24,14 @@
   <section>
     <h2>Implemented features (scaffold)</h2>
     <ul>
-      <li>Feature branch: <code>feat/flower-monai-scaffold</code> (local commits created)</li>
+      <li>Feature branch: <code>feat/flower-monai-scaffold</code></li>
       <li><strong>requirements.txt</strong> listing the primary dependencies (Flower, torch, MONAI, numpy, pytest)</li>
       <li>Basic Python package layout: <code>fedmed/</code> with <code>__init__.py</code></li>
-      <li>Model package stub: <code>fedmed/model/__init__.py</code> and a placeholder for UNet3D</li>
-      <li>Project directories created: <code>model/</code>, <code>data/</code>, <code>fl/</code>, <code>encryption/</code>, <code>scripts/</code>, and <code>.github/workflows/</code></li>
-      <li>Documentation directory created: <code>fedmed/docs/</code> (this file lives here)</li>
-      <li>Encryption approach decided: add a clear encryption interface plus a TenSEAL integration stub/mock later (keeps CI and onboarding simple for now)</li>
-      <li>Design decisions captured in the repository README describing the simplified NumPy-based reference implementations and porting notes</li>
+      <li>Model package: <code>fedmed/model/unet3d.py</code> (UNet3D stub with lazy PyTorch build)</li>
+      <li>Flower templates: <code>fedmed/fl/server.py</code> and <code>fedmed/fl/client.py</code> (lazy imports)
+      <li>Encryption scaffolding: <code>fedmed/encryption/interface.py</code> (TenSEAL stub) and <code>fedmed/encryption/mock.py</code> (MockSecureAggregator)</li>
+      <li>Scripts: PDF generator (<code>fedmed/scripts/generate_pdf.py</code>) and a local demo runner (<code>fedmed/scripts/run_demo.py</code>)</li>
+      <li>Documentation: this one-page summary and a generated PDF (<code>fedmed/docs/one_pager.pdf</code>)</li>
     </ul>
   </section>
 
@@ -43,17 +43,42 @@
   </section>
 
   <section>
-    <h2>Recommended next steps</h2>
+    <h2>How to run the code (local demo)</h2>
+    <p>These steps show how to run the scaffold locally. The demo is dependency-light and uses the NumPy-based mocks so it runs without PyTorch or TenSEAL. For the full stack (Flower, PyTorch, MONAI, TenSEAL) install the dependencies in <code>requirements.txt</code> and follow the same steps.</p>
+    <ol>
+      <li>Create and activate a virtual environment (recommended):
+        <pre>python -m venv .venv
+.venv\Scripts\Activate.ps1    # PowerShell
+# or .venv\Scripts\activate.bat  # cmd</pre>
+      </li>
+      <li>Install Python requirements (optional for full stack):
+        <pre>pip install -r requirements.txt</pre>
+      </li>
+      <li>Regenerate the PDF one-pager if you modified the HTML:
+        <pre>python fedmed\scripts\generate_pdf.py</pre>
+      </li>
+      <li>Run the local federated demo (pure-Python, no Flower required):
+        <pre>python fedmed\scripts\run_demo.py</pre>
+        The demo simulates three hospital nodes, each producing a small weight vector. Secure aggregation is simulated with pairwise masks and the recovered averaged update is printed.
+      </li>
+      <li>To run the Flower server/client templates (requires flwr):
+        <pre>python fedmed\fl\server.py     # starts a Flower server (requires flwr)
+python fedmed\fl\client.py     # connects a minimal client to server (requires flwr)</pre>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Notes and next steps</h2>
     <ul>
-      <li>Implement UNet3D model prototype in <code>fedmed/model/unet3d.py</code> (MONAI-compatible API)</li>
-      <li>Provide a Flower server and client template under <code>fedmed/fl/</code></li>
-      <li>Add a small synthetic dataset and an example run script in <code>scripts/</code> to demo one federated round locally</li>
-      <li>Replace the TenSEAL stub with a working integration when native build support is available</li>
+      <li>The UNet3D module provides a build_torch_model() method that constructs a tiny torch.nn.Module when PyTorch is installed. This keeps imports safe for environments without torch.</li>
+      <li>The TenSEAL stub and MockSecureAggregator allow developing and testing aggregation wiring before integrating native HE libraries.</li>
+      <li>To port to the production stack: replace LocalTrainer.get_weights() with actual PyTorch parameter extraction and plug in TenSEAL or an MPC-based secure aggregation implementation.</li>
     </ul>
   </section>
 
   <footer>
-    <small>Created on branch <code>feat/flower-monai-scaffold</code>. Commits are local; push when ready.</small>
+    <small>Branch: <code>feat/flower-monai-scaffold</code>. Commits will be pushed to your remote as requested.</small>
   </footer>
 </body>
 </html>
