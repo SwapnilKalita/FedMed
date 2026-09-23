@@ -35,6 +35,35 @@ def make_synthetic_mri_cases(
     return scans, masks
 
 
+def partition_across_hospitals(
+    scans: np.ndarray, masks: np.ndarray, hospital_names: tuple[str, ...], seed: int = 11
+) -> dict[str, tuple[np.ndarray, np.ndarray]]:
+    """Split whole cases (never voxels) across simulated hospital nodes.
+
+    Hospitals get uneven case counts on purpose, since real cross-silo
+    federations rarely have perfectly balanced datasets. FedAvg must weight
+    each hospital's contribution by its sample count to handle this fairly.
+    """
+    if scans.shape != masks.shape:
+        raise ValueError("scans and masks must have matching shapes")
+    if len(hospital_names) < 2:
+        raise ValueError("federated training needs at least two hospitals")
+
+    generator = np.random.default_rng(seed)
+    order = generator.permutation(len(scans))
+    # Uneven split weights, e.g. [0.5, 0.3, 0.2] for three hospitals.
+    raw_weights = generator.uniform(0.6, 1.4, size=len(hospital_names))
+    weights = raw_weights / raw_weights.sum()
+    boundaries = np.cumsum((weights * len(scans)).round().astype(int))[:-1]
+    chunks = np.split(order, boundaries)
+
+    partition: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+    for name, indices in zip(hospital_names, chunks):
+        indices = indices if len(indices) > 0 else order[:1]
+        partition[name] = (scans[indices], masks[indices])
+    return partition
+
+
 def split_cases(
     scans: np.ndarray, masks: np.ndarray, training_fraction: float = 0.75
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
