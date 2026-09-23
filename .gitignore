@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ML artifacts and datasets
+data/
+artifacts/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Node and build output
+node_modules/
+dist/
+build/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
