@@ -53,10 +53,12 @@
       <div style="display:flex;gap:12px;align-items:center">
         <button id="runDemo" class="btn">Run Demo (server)</button>
         <button id="refreshCharts" class="ghost">Refresh Charts</button>
-        <div id="statusText" class="small">Status: idle</div>
-      </div>
-      <div class="small">View: <strong>Local demo</strong></div>
-    </div>
+            <button id="exportCSV" class="ghost">Export CSV</button>
+            <button id="exportPNG" class="ghost">Export PNGs</button>
+            <div id="statusText" class="small">Status: idle</div>
+          </div>
+          <div class="small">View: <strong>Local demo</strong></div>
+        </div>
 
     <main class="grid">
       <!-- KPI cards -->
@@ -102,7 +104,10 @@
       <div class="card full-row">
         <div class="kpi">Ground-truth tumor mask (sample)</div>
         <div style="display:flex;gap:12px;margin-top:12px">
-          <div style="flex:1;background:rgba(255,255,255,0.02);height:220px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Sample image placeholder</div>
+          <div style="flex:1;background:rgba(255,255,255,0.02);height:220px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);overflow:hidden">
+              <img id="sampleImage" src="" alt="Sample mask" style="max-width:100%;max-height:100%;display:none;border-radius:6px;object-fit:contain" />
+              <div id="samplePlaceholder" style="width:100%;text-align:center;padding:12px">Sample image placeholder</div>
+            </div>
           <div style="flex:1;background:rgba(255,255,255,0.02);height:220px;border-radius:8px;padding:12px">
             <div class="small">Per-client contributions (weights)</div>
             <table id="weightsTable"><thead><tr><th>Client</th><th>Weights</th></tr></thead><tbody></tbody></table>
@@ -190,6 +195,33 @@
 
     document.getElementById('runDemo').addEventListener('click', callDemoAPI);
     document.getElementById('refreshCharts').addEventListener('click', ()=>{ samplesChart.update(); diceChart.update(); });
+
+    // Export CSV of updates + aggregated
+    document.getElementById('exportCSV').addEventListener('click', ()=>{
+      try{
+        const resp = window._lastDemoData || { local_updates: [], aggregated: [] };
+        const rows = [];
+        // header
+        rows.push(['type','client','values'].join(','));
+        (resp.local_updates || []).forEach((u,i)=>{
+          rows.push(['local', 'client_'+(i+1), '"'+JSON.stringify(u)+'"'].join(','));
+        });
+        rows.push(['aggregated','all','"'+JSON.stringify(resp.aggregated || [])+'"'].join(','));
+        const csv = rows.join('\n');
+        const blob = new Blob([csv], {type:'text/csv'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'fedmed_demo_data.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      }catch(e){ alert('Export failed: '+e.message); }
+    });
+
+    // Export PNG images of charts
+    document.getElementById('exportPNG').addEventListener('click', ()=>{
+      try{
+        // samplesChart and diceChart are Chart.js instances
+        const a1 = document.createElement('a'); a1.href = samplesChart.toBase64Image(); a1.download = 'samples_chart.png'; document.body.appendChild(a1); a1.click(); a1.remove();
+        const a2 = document.createElement('a'); a2.href = diceChart.toBase64Image(); a2.download = 'dice_chart.png'; document.body.appendChild(a2); a2.click(); a2.remove();
+      }catch(e){ alert('Export PNG failed: '+e.message); }
+    });
 
     // init
     createCharts();
