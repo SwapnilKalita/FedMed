@@ -87,3 +87,25 @@ stands in for and why (no network access here to install them):
 
 None of the module *interfaces* would need to change -- `run_federated_training`
 still takes hospital nodes and returns a global model either way.
+
+
+## Demo, screenshot, and CI
+
+- Start the interactive demo locally using the helper script in the repo root:
+
+```powershell
+# from repository root
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+.\start_demo.ps1
+```
+
+The helper opens two terminals (Flask API + static server) and opens the demo page at `http://localhost:8000/one_pager.html`.
+
+- Screenshot / GIF: add `docs/assets/demo-screenshot.png` or `docs/assets/demo.gif` if you want an image shown in the README; the demo page is `fedmed/docs/one_pager.html` and the generated PDF is `fedmed/docs/one_pager.pdf`.
+
+- Continuous integration: a lightweight smoke-test workflow runs on pushes and PRs to quickly validate imports and basic demo wiring. See: `.github/workflows/smoke-test.yml`.
+
+![Smoke test status](https://github.com/SwapnilKalita/FedMed/actions/workflows/smoke-test.yml/badge.svg)
+

@@ -5,11 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FedMed — One-page summary</title>
   <style>
-    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;margin:32px;color:#222}
-    h1{color:#0b5;}
-    section{margin-bottom:20px}
+    :root{--bg:#f7f8fb;--card:#ffffff;--muted:#6b7280;--accent:#0b5}
+    html,body{height:100%}
+    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;margin:28px;color:#111;background:var(--bg)}
+    header{margin-bottom:18px}
+    h1{color:var(--accent);margin:0 0 6px 0}
+    h2{font-size:1.15rem;margin:0 0 8px 0}
+    section{margin-bottom:18px}
+    .container{max-width:1100px;margin:0 auto}
     pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
-    ul{line-height:1.5}
+    ul{line-height:1.6}
+    /* cards */
+    .card{background:var(--card);border:1px solid #eef2f6;padding:12px;border-radius:8px;box-shadow:0 1px 2px rgba(12,15,20,0.03)}
+    button{background:#0b5;color:white;border:0;padding:8px 12px;border-radius:6px;cursor:pointer}
+    button:disabled{opacity:0.6;cursor:default}
+    table th, table td{padding:6px 8px;border-bottom:1px solid #f3f4f6}
+    @media (max-width:720px){body{margin:12px} .container{padding:0 8px} .card{padding:8px}}
   </style>
 </head>
 <body>
