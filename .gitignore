@@ -27,3 +27,8 @@ build/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Generated experiment/dashboard outputs (reproducible via run_experiment.py)
+dashboard/results.json
+dashboard/index.html
+__pycache__/

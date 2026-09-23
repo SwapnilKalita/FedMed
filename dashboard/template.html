@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>FedMed - Federated Training Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #171e2e; --border: #29324a; --text: #e7ecf7;
+    --muted: #93a0bd; --accent: #5ec3ff; --accent2: #ff8fab; --accent3: #7ee787;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif; padding: 28px 20px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; max-width: 1200px; margin: 0 auto; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .card h2 { font-size: 14px; margin: 0 0 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+  .stat { background: #10182a; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; flex: 1; min-width: 140px; }
+  .stat .label { color: var(--muted); font-size: 12px; }
+  .stat .value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  canvas { max-height: 260px; }
+  .wide { grid-column: 1 / -1; }
+  .mask-grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 1px; max-width: 320px; }
+  .mask-cell { aspect-ratio: 1; border-radius: 1px; }
+</style>
+</head>
+<body>
+  <h1>FedMed &mdash; Federated Training Dashboard</h1>
+  <p class="sub">Centralized baseline vs. federated (secure aggregation) vs. federated + differential privacy, on synthetic MRI tumor-segmentation data.</p>
+  <div class="grid">
+    <div class="card wide">
+      <h2>Final Dice score by strategy</h2>
+      <div class="stat-row" id="finalStats"></div>
+    </div>
+    <div class="card">
+      <h2>Hospital sample counts</h2>
+      <canvas id="sampleChart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Held-out Dice per round</h2>
+      <canvas id="diceChart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Mean local training loss per round</h2>
+      <canvas id="lossChart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Ground-truth tumor mask (sample, top-down projection)</h2>
+      <div class="mask-grid" id="maskGrid"></div>
+    </div>
+  </div>
+
+<script>
+const RESULTS = __RESULTS_JSON__;
+
+const colors = { federated: '#5ec3ff', dp: '#ff8fab', centralized: '#7ee787' };
+
+function statCard(label, value, color) {
+  const el = document.createElement('div');
+  el.className = 'stat';
+  el.innerHTML = `<div class="label">${label}</div><div class="value" style="color:${color}">${value}</div>`;
+  return el;
+}
+const statsEl = document.getElementById('finalStats');
+statsEl.appendChild(statCard('Centralized (reference)', RESULTS.centralized.final_dice.toFixed(4), colors.centralized));
+statsEl.appendChild(statCard('Federated + secure agg', RESULTS.federated.final_dice.toFixed(4), colors.federated));
+statsEl.appendChild(statCard('Federated + secure agg + DP', RESULTS.federated_with_dp.final_dice.toFixed(4), colors.dp));
+
+new Chart(document.getElementById('sampleChart'), {
+  type: 'bar',
+  data: {
+    labels: Object.keys(RESULTS.hospital_sample_counts),
+    datasets: [{ label: 'Local cases', data: Object.values(RESULTS.hospital_sample_counts), backgroundColor: '#5ec3ff88' }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+new Chart(document.getElementById('diceChart'), {
+  type: 'line',
+  data: {
+    labels: RESULTS.federated.rounds,
+    datasets: [
+      { label: 'Federated (secure agg)', data: RESULTS.federated.dice_curve, borderColor: colors.federated, tension: 0.25 },
+      { label: 'Federated + DP', data: RESULTS.federated_with_dp.dice_curve, borderColor: colors.dp, tension: 0.25 },
+      { label: 'Centralized (reference)', data: RESULTS.federated.rounds.map(() => RESULTS.centralized.final_dice), borderColor: colors.centralized, borderDash: [6, 4], pointRadius: 0 }
+    ]
+  },
+  options: { scales: { y: { min: 0, max: 1.05 } } }
+});
+
+new Chart(document.getElementById('lossChart'), {
+  type: 'line',
+  data: {
+    labels: RESULTS.federated.rounds,
+    datasets: [
+      { label: 'Federated (secure agg)', data: RESULTS.federated.loss_curve, borderColor: colors.federated, tension: 0.25 },
+      { label: 'Federated + DP', data: RESULTS.federated_with_dp.loss_curve, borderColor: colors.dp, tension: 0.25 }
+    ]
+  }
+});
+
+const mask = RESULTS.sample_mask.ground_truth;
+const maxVal = Math.max(...mask.flat());
+const grid = document.getElementById('maskGrid');
+mask.forEach(row => row.forEach(v => {
+  const cell = document.createElement('div');
+  cell.className = 'mask-cell';
+  const intensity = maxVal ? v / maxVal : 0;
+  cell.style.background = `rgba(94, 195, 255, ${intensity})`;
+  cell.style.outline = '1px solid #1c2438';
+  grid.appendChild(cell);
+}));
+</script>
+</body>
+</html>
