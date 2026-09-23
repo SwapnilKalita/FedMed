@@ -89,23 +89,59 @@ None of the module *interfaces* would need to change -- `run_federated_training`
 still takes hospital nodes and returns a global model either way.
 
 
-## Demo, screenshot, and CI
+## Demo, dashboard, and CI
 
-- Start the interactive demo locally using the helper script in the repo root:
+This repository includes a local interactive dashboard (dark theme) that visualizes the demo wiring and client updates.
+
+Quick start — run the dashboard locally (recommended)
+
+1. From the repository root open PowerShell and create/activate a virtual environment:
 
 ```powershell
-# from repository root
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+```
+
+2. Install the minimal dependencies (or full requirements):
+
+```powershell
 pip install -r requirements.txt
+# or minimal: pip install flask flask-cors
+```
+
+3. Start the demo servers (helper script opens two terminals for you):
+
+```powershell
 .\start_demo.ps1
 ```
 
-The helper opens two terminals (Flask API + static server) and opens the demo page at `http://localhost:8000/one_pager.html`.
+4. Open the dashboard in your browser:
 
-- Screenshot / GIF: add `docs/assets/demo-screenshot.png` or `docs/assets/demo.gif` if you want an image shown in the README; the demo page is `fedmed/docs/one_pager.html` and the generated PDF is `fedmed/docs/one_pager.pdf`.
+- Local static URL: `http://localhost:8000/dashboard.html`
+- (Alternative) open the file directly: `fedmed/docs/dashboard.html`
 
-- Continuous integration: a lightweight smoke-test workflow runs on pushes and PRs to quickly validate imports and basic demo wiring. See: `.github/workflows/smoke-test.yml`.
+Notes
+
+- The helper starts the Flask demo API on port 5000 and a static HTTP server serving `fedmed/docs` on port 8000. The dashboard fetches demo data from `http://localhost:5000/run_demo`.
+- If you prefer to run servers manually:
+
+```powershell
+# start API (from repo root)
+python -m fedmed.api.run_demo_api
+# serve docs folder
+python -m http.server 8000 --directory ".\fedmed\docs"
+# then open: http://localhost:8000/dashboard.html
+```
+
+Assets and artifacts
+
+- Dashboard page: `fedmed/docs/dashboard.html`
+- One-page summary: `fedmed/docs/one_pager.html` and PDF `fedmed/docs/one_pager.pdf`
+- Add screenshots or demo GIFs under `fedmed/docs/assets/` (create the folder) and reference them from the README if needed.
+
+Continuous integration
+
+- A lightweight smoke-test workflow runs on pushes and PRs to validate imports and the basic demo wiring: `.github/workflows/smoke-test.yml`.
 
 ![Smoke test status](https://github.com/SwapnilKalita/FedMed/actions/workflows/smoke-test.yml/badge.svg)
 
