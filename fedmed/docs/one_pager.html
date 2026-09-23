@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FedMed — One-page summary</title>
+  <style>
+    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;margin:32px;color:#222}
+    h1{color:#0b5;}
+    section{margin-bottom:20px}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    ul{line-height:1.5}
+  </style>
+</head>
+<body>
+  <h1>FedMed — One-page summary</h1>
+  <p>A short summary of what has been implemented on the <strong>feat/flower-monai-scaffold</strong> branch so far and how to view this page locally.</p>
+
+  <section>
+    <h2>Overview</h2>
+    <p>FedMed is a scaffold for privacy-preserving cross-silo federated learning for medical imaging. The scaffold is designed to be ported to Flower (federated orchestration), PyTorch + MONAI (3D U-Net segmentation), and a future TenSEAL homomorphic encryption integration.</p>
+  </section>
+
+  <section>
+    <h2>Implemented features (scaffold)</h2>
+    <ul>
+      <li>Feature branch: <code>feat/flower-monai-scaffold</code> (local commits created)</li>
+      <li><strong>requirements.txt</strong> listing the primary dependencies (Flower, torch, MONAI, numpy, pytest)</li>
+      <li>Basic Python package layout: <code>fedmed/</code> with <code>__init__.py</code></li>
+      <li>Model package stub: <code>fedmed/model/__init__.py</code> and a placeholder for UNet3D</li>
+      <li>Project directories created: <code>model/</code>, <code>data/</code>, <code>fl/</code>, <code>encryption/</code>, <code>scripts/</code>, and <code>.github/workflows/</code></li>
+      <li>Documentation directory created: <code>fedmed/docs/</code> (this file lives here)</li>
+      <li>Encryption approach decided: add a clear encryption interface plus a TenSEAL integration stub/mock later (keeps CI and onboarding simple for now)</li>
+      <li>Design decisions captured in the repository README describing the simplified NumPy-based reference implementations and porting notes</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How to open this page in your browser</h2>
+    <p>From Windows File Explorer: double-click <code>fedmed/docs/one_pager.html</code>. Or run this command from PowerShell or cmd:</p>
+    <pre>start "" "C:\Users\user\OneDrive\Desktop\Axlero Internship\FedMed\fedmed-federated-learning.worktrees\fedmed-federated-learning-privacy-ml\fedmed\docs\one_pager.html"</pre>
+    <p>Or open the file directly in most editors (VS Code: <code>File → Open File...</code>).</p>
+  </section>
+
+  <section>
+    <h2>Recommended next steps</h2>
+    <ul>
+      <li>Implement UNet3D model prototype in <code>fedmed/model/unet3d.py</code> (MONAI-compatible API)</li>
+      <li>Provide a Flower server and client template under <code>fedmed/fl/</code></li>
+      <li>Add a small synthetic dataset and an example run script in <code>scripts/</code> to demo one federated round locally</li>
+      <li>Replace the TenSEAL stub with a working integration when native build support is available</li>
+    </ul>
+  </section>
+
+  <footer>
+    <small>Created on branch <code>feat/flower-monai-scaffold</code>. Commits are local; push when ready.</small>
+  </footer>
+</body>
+</html>
