@@ -25,10 +25,21 @@ Raw MRI scans remain within each hospital node. The coordinator receives model u
 
 ## Milestones
 
-1. Build a centralized 3D U-Net baseline and three local hospital-node stubs.
-2. Implement Flower-based federated training and secure node communication.
-3. Add encrypted aggregation with TenSEAL and live training metrics.
-4. Add differential privacy and a dashboard for convergence and segmentation masks.
+1. ✅ Centralized baseline and three simulated hospital nodes (`model/hospital_node.py`).
+2. ✅ Federated training loop with FedAvg, uneven data partitions, and
+   resilience to a hospital dropping offline mid-training (`server/coordinator.py`).
+3. ✅ Secure aggregation so the coordinator never sees an individual hospital's
+   update, plus per-round metrics feeding the dashboard (`server/secure_aggregation.py`).
+4. ✅ Differential privacy noise and a dashboard comparing centralized vs.
+   federated vs. federated+DP convergence (`model/differential_privacy.py`, `dashboard/`).
+
+This sandbox has no network access and cannot install `torch`, `flwr`, or
+`tenseal`. Every milestone above is implemented with the *same algorithms*
+(FedAvg, a Bonawitz-style secure aggregation protocol, the Gaussian DP
+mechanism) in dependency-free NumPy, so the wiring is fully verified end to
+end. See `docs/03-secure-aggregation.md` and `docs/04-differential-privacy.md`
+for exactly what's simplified and what a production port to
+PyTorch/MONAI + Flower + TenSEAL would change.
 
 ## Repository layout
 
@@ -48,4 +59,31 @@ This repository will use public or synthetic data only. It is a portfolio protot
 
 ## Getting started
 
-The initial commit defines the project boundary and directory structure. The next implementation step is to create the centralized baseline and a reproducible public-data pipeline.
+```bash
+pip install -e .          # numpy only, no other dependencies needed
+python -m unittest discover -s tests   # 19 tests, all pure-Python/NumPy
+python run_experiment.py               # trains all three variants, writes dashboard/results.json
+python -m dashboard.build_dashboard    # bakes results.json into dashboard/index.html
+```
+
+Then open `dashboard/index.html` in a browser to see:
+- final Dice score for centralized vs. federated vs. federated+DP,
+- each hospital's (uneven) sample count,
+- per-round Dice and training-loss curves,
+- a sample ground-truth tumor mask.
+
+## Porting to the real stack
+
+Every module documents, in its docstring, exactly which real library it
+stands in for and why (no network access here to install them):
+
+| This repo | Production equivalent |
+|---|---|
+| `IntensitySegmentationBaseline` (1-parameter logistic model) | 3D U-Net (PyTorch/MONAI) |
+| `server/federated_averaging.py` + `server/coordinator.py` | Flower `FedAvg` strategy + server loop |
+| `server/secure_aggregation.py` (pairwise masking) | TenSEAL homomorphic encryption / Flower `SecAgg+` |
+| `model/differential_privacy.py` (Gaussian mechanism) | Opacus / TensorFlow Privacy DP-SGD with an accountant |
+| `dashboard/` (static HTML + Chart.js) | React/Recharts dashboard fed by a live WebSocket |
+
+None of the module *interfaces* would need to change -- `run_federated_training`
+still takes hospital nodes and returns a global model either way.
